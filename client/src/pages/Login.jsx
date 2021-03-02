@@ -1,4 +1,5 @@
 import React from "react";
+import axios from 'axios';
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
@@ -123,13 +124,15 @@ function useLogin() {
   const history = useHistory();
 
   const login = async (email, password) => {
-    console.log(email, password);
-    const res = await fetch(
-      `/auth/login?email=${email}&password=${password}`
-    ).then(res => res.json());
-    localStorage.setItem("user", res.user);
-    localStorage.setItem("token", res.token);
-    history.push("/dashboard");
+    try {
+      const body =JSON.stringify({email,password});
+      const config = {headers: {'Content-Type': 'application/json'}};
+      await axios.post(`/users/login`,body,config);
+      history.push("/dashboard");
+    } catch (error) {
+      const errors = error.response.data.errors;
+      errors.forEach(err=> console.log(err.msg));
+    }
   };
   return login;
 }
@@ -141,9 +144,9 @@ export default function Login() {
   const history = useHistory();
 
   React.useEffect(() => {
-    const user = localStorage.getItem("user");
+    const user = JSON.parse(localStorage.getItem("userInfo"));
     if (user) history.push("/dashboard");
-  }, []);
+  }, [history]);
 
   const login = useLogin();
 
@@ -158,7 +161,7 @@ export default function Login() {
       <Grid item xs={false} sm={4} md={5} className={classes.image}>
         <Box className={classes.overlay}>
           <Hidden xsDown>
-            <img width={67} src="/images/chatBubble.png" />
+            <img width={67} src="/images/chatBubble.png" alt='banner' />
             <Hidden smDown>
               <p className={classes.heroText}>
                 Converse with anyone with any language
@@ -175,7 +178,6 @@ export default function Login() {
                 Don't have an account?
               </Button>
               <Button
-                color="background"
                 className={classes.accBtn}
                 variant="contained"
               >
@@ -211,7 +213,7 @@ export default function Login() {
                 login(email, password).then(
                   () => {
                     // useHistory push to chat
-                    console.log(email, password);
+                    history.push('/dashboard');
                     return;
                   },
                   error => {
@@ -270,7 +272,6 @@ export default function Login() {
                     error={touched.password && Boolean(errors.password)}
                     value={values.password}
                     onChange={handleChange}
-                    type="password"
                   />
 
                   <Box textAlign="center">

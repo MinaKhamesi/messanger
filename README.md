@@ -10,6 +10,8 @@ Add these lines to your `.env` file:
 
 Run `npm run data:import` to import dummy data into the database.
 
-Run `npm run dev` to start the server and connect the database.
+Run `npm run dev` in server directory to start the server and connect the database.
+
+Run `npm start` in client directory to start the front-end.
 
 Run `npm run test` to start testing api routes.

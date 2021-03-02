@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
@@ -119,17 +120,21 @@ const useStyles = makeStyles(theme => ({
 function useRegister() {
   const history = useHistory();
 
-  const login = async (username, email, password) => {
-    console.log(email, password);
-    const res = await fetch(
-      `/auth/signup?username=${username}&email=${email}&password=${password}`
-    ).then(res => res.json());
-    console.log(res);
-    localStorage.setItem("user", res.user);
-    localStorage.setItem("token", res.token);
-    history.push("/dashboard");
+  const register = async (name, email, password) => {
+    try {
+      const body =JSON.stringify({name, email, password});
+
+      const config = {headers: {'Content-Type': 'application/json'}}
+
+      await axios.post(`/users/register`,body,config);
+
+      history.push("/dashboard");
+    } catch (error) {
+      const errors = error.response.data.errors;
+      errors.forEach(err=> console.log(err.msg));
+    }
   };
-  return login;
+  return register;
 }
 
 export default function Register() {
@@ -146,9 +151,9 @@ export default function Register() {
   const history = useHistory();
 
   React.useEffect(() => {
-    const user = localStorage.getItem("user");
+    const user = JSON.parse(localStorage.getItem("userInfo"));
     if (user) history.push("/dashboard");
-  }, []);
+  }, [history]);
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -156,7 +161,7 @@ export default function Register() {
       <Grid item xs={false} sm={4} md={5} className={classes.image}>
         <Box className={classes.overlay}>
           <Hidden xsDown>
-            <img width={67} src="/images/chatBubble.png" />
+            <img width={67} src="/images/chatBubble.png" alt='banner'/>
             <Hidden smDown>
               <Typography className={classes.heroText}>
                 Converse with anyone with any language
@@ -173,7 +178,6 @@ export default function Register() {
                 Already have an account?
               </Button>
               <Button
-                color="background"
                 className={classes.accBtn}
                 variant="contained"
               >
@@ -196,6 +200,7 @@ export default function Register() {
             </Grid>
             <Formik
               initialValues={{
+                username:"",
                 email: "",
                 password: ""
               }}
@@ -219,7 +224,7 @@ export default function Register() {
                 register(username, email, password).then(
                   () => {
                     // useHistory push to chat
-                    console.log(email, password);
+                    
                     return;
                   },
                   error => {
@@ -243,7 +248,6 @@ export default function Register() {
                       </Typography>
                     }
                     fullWidth
-                    id="username"
                     margin="normal"
                     InputLabelProps={{
                       shrink: true
@@ -298,7 +302,6 @@ export default function Register() {
                     error={touched.password && Boolean(errors.password)}
                     value={values.password}
                     onChange={handleChange}
-                    type="password"
                   />
 
                   <Box textAlign="center">

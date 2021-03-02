@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import { MuiThemeProvider } from "@material-ui/core";
 import { theme } from "./themes/theme.js";
 // import { createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
@@ -10,8 +11,19 @@ import Dashboard from "./pages/Dashboard";
 import "./App.css";
 
 function App() {
-  const [loggedIn, setLoggedIn] = React.useState(localStorage.getItem("user"));
-
+  // const [loggedIn, setLoggedIn] = React.useState(localStorage.getItem("user"));
+  const getUser = async () => {
+    try {
+      const {data} = await axios.get('/users/auth');
+      localStorage.setItem("userInfo",JSON.stringify(data.user));
+    } catch (error) {
+      const errors = error.response.data.errors;
+      errors.forEach(err=> console.log(err.msg));
+    }
+  };
+  React.useEffect(() => {
+    getUser()
+  },[])
   return (
     <MuiThemeProvider theme={theme}>
       <BrowserRouter>

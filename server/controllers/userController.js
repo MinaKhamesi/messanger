@@ -31,7 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const token = assignToken(newUser.id);
 
   res.cookie('authToken', token, {
-    maxAge: 3600,
+    maxAge: 12 * 60 * 60 * 1000,
     httpOnly: true,
   });
   res.status(201).json({ msg: 'register successful' });
@@ -57,7 +57,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (matched) {
     const token = assignToken(user.id);
     res.cookie('authToken', token, {
-      maxAge: 3600,
+      maxAge: 12 * 60 * 60 * 1000,
       httpOnly: true,
     });
     res.status(200).json({ msg: 'login successful' });
@@ -66,6 +66,18 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Error('Invalid email or password');
   }
 });
+
+// @desc    Logout controller to clear cookie and token
+// @route   GET /users/logout
+// @access  Private
+const logout = async (req, res) => {
+  // Set token to none and expire after 5 seconds
+  res.cookie('authToken', 'none', {
+    maxAge: 1000,
+    httpOnly: true,
+  });
+  res.status(200).json({ success: true, message: 'User logged out successfully' });
+};
 
 // @route    GET /users/auth
 // @des      authenticate user
@@ -90,6 +102,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  logout,
   getUserById,
   getAllUsers,
 };

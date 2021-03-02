@@ -4,6 +4,7 @@ const auth = require('../MiddleWares/auth');
 const {
   registerUser,
   loginUser,
+  logout,
   getUserById,
   getAllUsers,
 } = require('../controllers/userController');
@@ -18,6 +19,8 @@ router.post('/login', [
   check('email', 'please include a valid email').isEmail(),
   check('password', 'please fill the password field').not().isEmpty(),
 ], loginUser);
+
+router.get('/logout', auth, logout);
 
 router.get('/auth', auth, getUserById);
 
