@@ -130,7 +130,7 @@ function useRegister() {
 
       history.push("/dashboard");
     } catch (error) {
-      const errors = error.response.data.errors;
+      const errors = error.response.data.errors || [{msg:'server error'}];
       errors.forEach(err=> console.log(err.msg));
     }
   };
