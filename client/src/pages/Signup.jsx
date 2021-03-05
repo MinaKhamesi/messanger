@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import {useDispatch, useSelector} from 'react-redux';
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
@@ -7,7 +7,7 @@ import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Hidden from "@material-ui/core/Hidden";
 import Snackbar from "@material-ui/core/Snackbar";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, Redirect } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
@@ -15,6 +15,9 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import {register} from '../actions/userActions';
+
+
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -117,43 +120,30 @@ const useStyles = makeStyles(theme => ({
   link: { textDecoration: "none", display: "flex", flexWrap: "nowrap" }
 }));
 
-function useRegister() {
-  const history = useHistory();
-
-  const register = async (name, email, password) => {
-    try {
-      const body =JSON.stringify({name, email, password});
-
-      const config = {headers: {'Content-Type': 'application/json'}}
-
-      await axios.post(`/users/register`,body,config);
-
-      history.push("/dashboard");
-    } catch (error) {
-      const errors = error.response.data.errors || [{msg:'server error'}];
-      errors.forEach(err=> console.log(err.msg));
-    }
-  };
-  return register;
-}
 
 export default function Register() {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(true);
+  
+  const history = useHistory();
 
-  const register = useRegister();
+  const dispatch = useDispatch();
+
+  const [open, setOpen] = React.useState(true);
+  
+  const user = useSelector(state=>state.user);
+  const {userInfo} = user;
+  
+  const alert = useSelector(state=>state.alert);
+  const { registerErr } = alert;
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") return;
     setOpen(false);
   };
 
-  const history = useHistory();
-
-  React.useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userInfo"));
-    if (user) history.push("/dashboard");
-  }, [history]);
+  if(userInfo){
+    return <Redirect to='/dashboard'/>
+  }
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -220,18 +210,8 @@ export default function Register() {
                 { username, email, password },
                 { setStatus, setSubmitting }
               ) => {
-                setStatus();
-                register(username, email, password).then(
-                  () => {
-                    // useHistory push to chat
-                    
-                    return;
-                  },
-                  error => {
-                    setSubmitting(false);
-                    setStatus(error);
-                  }
-                );
+                dispatch(register(username,email,password,history));
+                setOpen(true);
               }}
             >
               {({ handleSubmit, handleChange, values, touched, errors }) => (
@@ -321,7 +301,9 @@ export default function Register() {
           </Box>
           <Box p={1} alignSelf="center" />
         </Box>
-        <Snackbar
+        {registerErr.length > 0 && registerErr.map((err,idx)=>
+         <Snackbar
+          key = {idx}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "center"
@@ -329,7 +311,7 @@ export default function Register() {
           open={open}
           autoHideDuration={6000}
           onClose={handleClose}
-          message="Email already exists"
+          message={err.msg}
           action={
             <React.Fragment>
               <IconButton
@@ -343,6 +325,7 @@ export default function Register() {
             </React.Fragment>
           }
         />
+      )}
       </Grid>
     </Grid>
   );
