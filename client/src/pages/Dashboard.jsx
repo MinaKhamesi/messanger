@@ -1,31 +1,31 @@
 import React from "react";
+import {useDispatch, useSelector} from 'react-redux';
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
-import { useHistory } from "react-router-dom";
+import {logout} from '../actions/userActions';
+import Loading from '../components/Loading/Loading';
+
 
 export default function Dashboard() {
-  const history = useHistory();
+  const dispatch = useDispatch();
 
-  React.useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) history.push("/signup");
-  }, []);
+  const user = useSelector(state => state.user)
+  const {userInfo, loading} = user;
 
-  return (
-    <>
+  return (  loading ? <Loading/> : <>
       {/* For testing purposes right now, ignore styling */}
       <p>Dashboard</p>
-      <p>User: {JSON.stringify(localStorage.getItem("user"))}</p>
+      {userInfo && <p>User: {userInfo.name}</p>}
       <button
         onClick={() => {
-          localStorage.removeItem("user");
-          history.push("/login");
+          dispatch(logout());
         }}
       >
         Logout
       </button>
-    </>
-  );
-}
+      </>
+    )
+      };
+
